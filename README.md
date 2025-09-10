@@ -1,1 +1,0 @@
-# MIS-Intern-student-portal

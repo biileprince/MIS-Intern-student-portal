@@ -8,225 +8,177 @@ if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || $_SESSION
   exit;
 }
 
-// Fetch all students for display
-$sql = "SELECT student_id, reg_no, first_name, last_name, email, phone FROM student";
+// Fetch all students with program information
+$sql = "SELECT s.student_id, s.reg_no, s.first_name, s.last_name, s.email, s.phone, 
+               s.address, s.date_of_birth, s.gender, s.level, p.program_name,
+               s.created_at
+        FROM student s 
+        LEFT JOIN programs p ON s.program_id = p.program_id 
+        ORDER BY s.created_at DESC";
 $result = $conn->query($sql);
 
+// Get total students count
+$total_students = $result->num_rows;
+
+// Get programs for filtering
+$programs = [];
+$sql_programs = "SELECT program_id, program_name FROM programs";
+$result_programs = $conn->query($sql_programs);
+if ($result_programs->num_rows > 0) {
+  while ($row = $result_programs->fetch_assoc()) {
+    $programs[] = $row;
+  }
+}
+
+// Get students by program with program IDs
+$students_by_program = [];
+$sql_program_count = "SELECT p.program_id, p.program_name, COUNT(s.student_id) as count 
+                     FROM programs p 
+                     LEFT JOIN student s ON p.program_id = s.program_id 
+                     GROUP BY p.program_id";
+$result_program_count = $conn->query($sql_program_count);
+if ($result_program_count->num_rows > 0) {
+  while ($row = $result_program_count->fetch_assoc()) {
+    $students_by_program[] = $row;
+  }
+}
+
+// Get total courses
+$sql_courses = "SELECT COUNT(*) as total_courses FROM courses";
+$result_courses = $conn->query($sql_courses);
+$total_courses = $result_courses->fetch_assoc()['total_courses'];
+
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="style.css">
-  <style>
-    /* Reset & Font */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-      font-family: "Poppins", sans-serif;
-    }
-
-    body {
-      display: flex;
-      min-height: 100vh;
-      background: #f1f1f1;
-    }
-
-    /* Sidebar */
-    .sidebar {
-      width: 220px;
-      background: #9b5cff;
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      padding: 20px;
-    }
-
-    .sidebar h2 {
-      margin-bottom: 30px;
-      color: #fff;
-    }
-
-    .sidebar a {
-      color: #fff;
-      text-decoration: none;
-      padding: 12px;
-      border-radius: 5px;
-      display: block;
-      margin-bottom: 10px;
-    }
-
-    .sidebar a:hover,
-    .sidebar a.active {
-      background: #fff;
-      color: #9b5cff;
-    }
-
-    /* Main */
-    .main {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-    }
-
-    /* Header */
-    header {
-      background: #fff;
-      padding: 15px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid #ddd;
-    }
-
-    header h2 {
-      color: #111;
-    }
-
-    .logout-btn {
-      background: #9b5cff;
-      color: white;
-      border: none;
-      padding: 8px 12px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-
-    /* Cards */
-    .card-container {
-      display: flex;
-      gap: 20px;
-      padding: 20px;
-    }
-
-    .card {
-      flex: 1;
-      background: white;
-      padding: 20px;
-      border-radius: 10px;
-      text-align: center;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    }
-
-    .card h3 {
-      margin-bottom: 10px;
-      color: #9b5cff;
-    }
-
-    /* Table */
-    .content {
-      padding: 20px;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: white;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    th,
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-
-    th {
-      background: #9b5cff;
-      color: white;
-    }
-
-    button,
-    .action-btn {
-      padding: 6px 10px;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-block;
-      text-align: center;
-    }
-
-    .edit-btn {
-      background: #3498db;
-      color: white;
-      margin-right: 5px;
-    }
-
-    .delete-btn {
-      background: #e74c3c;
-      color: white;
-    }
-
-    .add-btn {
-      background: #27ae60;
-      color: white;
-      margin-bottom: 20px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
-  <!-- Sidebar -->
-  <div class="sidebar">
-    <h2>Admin</h2>
-    <a href="dashboard.php" class="active">Dashboard</a>
-    <a href="add_student.php">Add Student</a>
-  </div>
+  <div class="container">
+    <?php include 'admin_sidebar.php'; ?>
+    <div class="main-content">
+      <header class="main-header">
+        <h2>Dashboard</h2>
+      </header>
 
-  <!-- Main -->
-  <div class="main">
-    <header>
-      <h2>Student Management Dashboard</h2>
-      <a href="logout.php" class="logout-btn">Logout</a>
-    </header>
+      <main>
+        <div class="cards">
+          <div class="card">
+            <i class="fas fa-users"></i>
+            <div class="card-content">
+              <h3><?php echo $total_students; ?></h3>
+              <p>Total Students</p>
+            </div>
+          </div>
+          <div class="card">
+            <i class="fas fa-graduation-cap"></i>
+            <div class="card-content">
+              <h3><?php echo count($programs); ?></h3>
+              <p>Programs Offered</p>
+            </div>
+          </div>
+          <div class="card">
+            <i class="fas fa-book"></i>
+            <div class="card-content">
+              <h3><?php echo $total_courses; ?></h3>
+              <p>Total Courses</p>
+            </div>
+          </div>
+        </div>
 
-    <!-- Cards -->
-    <div class="card-container">
-      <div class="card">
-        <h3>Total Students</h3>
-        <p><?php echo $result->num_rows; ?></p>
-      </div>
+        <!-- Students by Program -->
+        <div class="table-container">
+          <div class="table-header">
+            <h3>Students by Program</h3>
+          </div>
+          <div class="program-stats">
+            <?php foreach ($students_by_program as $program_stat) : ?>
+              <div class="stat-item">
+                <a href="program_details.php?id=<?php echo $program_stat['program_id']; ?>" class="program-link">
+                  <span class="program-name"><?php echo $program_stat['program_name']; ?></span>
+                  <span class="count"><?php echo $program_stat['count']; ?> students</span>
+                  <i class="fas fa-arrow-right"></i>
+                </a>
+              </div>
+            <?php endforeach; ?>
+          </div>
+        </div>
+
+        <div class="table-container">
+          <div class="table-header">
+            <h3>All Students Information</h3>
+            <a href="add_student.php" class="add-student-btn">Add New Student</a>
+          </div>
+          <div class="responsive-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reg No</th>
+                  <th>Full Name</th>
+                  <th>Email</th>
+                  <th>Phone</th>
+                  <th>Program</th>
+                  <th>Level</th>
+                  <th>Gender</th>
+                  <th>Date of Birth</th>
+                  <th>Address</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <?php
+                // Re-run the query since it was closed
+                $sql = "SELECT s.student_id, s.reg_no, s.first_name, s.last_name, s.email, s.phone, 
+                               s.address, s.date_of_birth, s.gender, s.level, p.program_name
+                        FROM student s 
+                        LEFT JOIN programs p ON s.program_id = p.program_id 
+                        ORDER BY s.created_at DESC";
+                $result = $conn->query($sql);
+                if ($result->num_rows > 0) : ?>
+                  <?php while ($row = $result->fetch_assoc()) : ?>
+                    <tr>
+                      <td data-label="Reg No"><?php echo $row['reg_no']; ?></td>
+                      <td data-label="Name"><?php echo $row['first_name'] . ' ' . $row['last_name']; ?></td>
+                      <td data-label="Email"><?php echo $row['email']; ?></td>
+                      <td data-label="Phone"><?php echo $row['phone']; ?></td>
+                      <td data-label="Program"><?php echo $row['program_name'] ?? 'Not Assigned'; ?></td>
+                      <td data-label="Level"><?php echo $row['level']; ?></td>
+                      <td data-label="Gender"><?php echo $row['gender']; ?></td>
+                      <td data-label="DOB"><?php echo date('M d, Y', strtotime($row['date_of_birth'])); ?></td>
+                      <td data-label="Address"><?php echo $row['address']; ?></td>
+                      <td data-label="Actions" class="actions">
+                        <a href="edit_student.php?id=<?php echo $row['student_id']; ?>" title="Edit Student">
+                          <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="delete_student.php?id=<?php echo $row['student_id']; ?>"
+                          class="delete"
+                          title="Delete Student"
+                          onclick="return confirm('Are you sure you want to delete this student?');">
+                          <i class="fas fa-trash"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  <?php endwhile; ?>
+                <?php else : ?>
+                  <tr>
+                    <td colspan="10">No students found.</td>
+                  </tr>
+                <?php endif;
+                $conn->close();
+                ?>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
     </div>
-
-    <!-- Student List -->
-    <div class="content">
-      <a href="add_student.php" class="action-btn add-btn">Add New Student</a>
-      <h2>Student List</h2>
-      <table>
-        <tr>
-          <th>Reg No</th>
-          <th>Name</th>
-          <th>Email</th>
-          <th>Phone</th>
-          <th>Action</th>
-        </tr>
-        <?php if ($result->num_rows > 0): ?>
-          <?php while ($row = $result->fetch_assoc()): ?>
-            <tr>
-              <td><?php echo $row["reg_no"]; ?></td>
-              <td><?php echo $row["first_name"] . ' ' . $row["last_name"]; ?></td>
-              <td><?php echo $row["email"]; ?></td>
-              <td><?php echo $row["phone"]; ?></td>
-              <td>
-                <a href="edit_student.php?id=<?php echo $row['student_id']; ?>" class="action-btn edit-btn">Edit</a>
-                <a href="delete_student.php?id=<?php echo $row['student_id']; ?>" class="action-btn delete-btn" onclick="return confirm('Are you sure you want to delete this student?');">Delete</a>
-              </td>
-            </tr>
-          <?php endwhile; ?>
-        <?php else: ?>
-          <tr>
-            <td colspan="5">No students found</td>
-          </tr>
-        <?php endif; ?>
-      </table>
-    </div>
-  </div>
 </body>
 
 </html>
