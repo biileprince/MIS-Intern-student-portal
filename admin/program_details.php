@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'db_connect.php';
+require_once '../includes/db_connect.php';
 
 // Check if the user is logged in as admin
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || $_SESSION["role"] !== 'admin') {
-    header("location: index.php");
+    header("location: ../index.php");
     exit;
 }
 
@@ -87,13 +87,13 @@ $stmt->close();
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo htmlspecialchars($program['program_name']); ?> - Program Details</title>
-    <link rel="stylesheet" href="style.css?v=1.2">
+    <link rel="stylesheet" href="../assets/css/style.css?v=1.2">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
     <div class="container">
-        <?php include 'admin_sidebar.php'; ?>
+        <?php include '../includes/admin_sidebar.php'; ?>
         <div class="main-content">
             <header class="main-header">
                 <div class="header-content">

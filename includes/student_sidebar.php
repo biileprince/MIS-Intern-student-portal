@@ -14,6 +14,6 @@ $current_page = basename($_SERVER['PHP_SELF']);
         <a href="faqs.php" class="<?php echo $current_page == 'faqs.php' ? 'active' : ''; ?>"><i class="fas fa-question-circle"></i> FAQs</a>
     </div>
     <div class="sidebar-footer">
-        <a href="logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        <a href="../logout.php"><i class="fas fa-sign-out-alt"></i> Logout</a>
     </div>
 </div>

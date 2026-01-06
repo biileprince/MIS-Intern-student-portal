@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'db_connect.php';
+require_once '../includes/db_connect.php';
 
 // Check if the user is logged in, if not then redirect to login page
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true) {
-    header("location: index.php");
+    header("location: ../index.php");
     exit;
 }
 
@@ -28,7 +28,7 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <title>FAQs</title>
-    <link rel="stylesheet" href="style.css?v=1.1">
+    <link rel="stylesheet" href="../assets/css/style.css?v=1.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
@@ -38,7 +38,7 @@ $conn->close();
         if ($_SESSION['role'] == 'admin') {
             include 'admin_sidebar.php';
         } else {
-            include 'student_sidebar.php';
+            include '../includes/student_sidebar.php';
         }
         ?>
         <div class="main-content">

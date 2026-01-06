@@ -1,9 +1,9 @@
 <?php
 session_start();
-require_once 'db_connect.php';
+require_once '../includes/db_connect.php';
 
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || $_SESSION["role"] !== 'admin') {
-    header("location: index.php");
+    header("location: ../index.php");
     exit;
 }
 
@@ -119,13 +119,13 @@ $conn->close();
 <head>
     <meta charset="UTF-8">
     <title>Edit Course</title>
-    <link rel="stylesheet" href="style.css?v=1.1">
+    <link rel="stylesheet" href="../assets/css/style.css?v=1.1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 
 <body>
     <div class="container">
-        <?php include 'admin_sidebar.php'; ?>
+        <?php include '../includes/admin_sidebar.php'; ?>
         <div class="main-content">
             <header>
                 <h1>Edit Course</h1>

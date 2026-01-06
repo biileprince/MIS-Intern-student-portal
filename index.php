@@ -5,15 +5,15 @@ session_start();
 // Check if the user is already logged in, if yes then redirect them to appropriate page
 if (isset($_SESSION["loggedin"]) && $_SESSION["loggedin"] === true) {
   if ($_SESSION["role"] === "admin") {
-    header("location: dashboard.php");
+    header("location: admin/dashboard.php");
     exit;
   } else {
-    header("location: portal.php");
+    header("location: student/portal.php");
     exit;
   }
 }
 
-require_once 'db_connect.php';
+require_once 'includes/db_connect.php';
 
 $login_id = $password = "";
 $login_err = $password_err = "";
@@ -67,10 +67,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
               $_SESSION["role"] = $role;
 
               if ($role === "admin") {
-                header("location: dashboard.php");
+                header("location: admin/dashboard.php");
               } else {
                 $_SESSION["reg_no"] = $reg_no;
-                header("location: portal.php");
+                header("location: student/portal.php");
               }
               exit;
             } else {
@@ -96,7 +96,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <head>
   <meta charset="UTF-8">
   <title>Student Portal Login</title>
-  <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="assets/css/style.css?v=1.1">
   <style>
     /* Keep the existing styles from your index.php */
     /* ... */
@@ -141,7 +141,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <p>Login to access your account</p>
       </div>
       <div class="illustration">
-        <img src="./login.jpg" alt="Student Illustration">
+        <img src="assets/images/login.jpg" alt="Student Illustration">
       </div>
     </div>
   </div>

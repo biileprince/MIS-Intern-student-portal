@@ -1,10 +1,10 @@
 <?php
 session_start();
-require_once 'db_connect.php';
+require_once '../includes/db_connect.php';
 
 // Check if the user is logged in, if not then redirect to login page
 if (!isset($_SESSION["loggedin"]) || $_SESSION["loggedin"] !== true || $_SESSION["role"] !== 'student') {
-  header("location: index.php");
+  header("location: ../index.php");
   exit;
 }
 
@@ -190,14 +190,14 @@ $conn->close();
 <head>
   <meta charset="UTF-8">
   <title>Student Portal</title>
-  <link rel="stylesheet" href="style.css?v=1.1">
+  <link rel="stylesheet" href="../assets/css/style.css?v=1.1">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <script src="script.js"></script>
+  <script src="../assets/js/script.js"></script>
 </head>
 
 <body>
   <div class="container">
-    <?php include 'student_sidebar.php'; ?>
+    <?php include '../includes/student_sidebar.php'; ?>
     <div class="main-content">
       <header class="main-header">
         <h2>Dashboard</h2>
